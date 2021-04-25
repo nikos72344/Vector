@@ -16,7 +16,7 @@ void loo(double d)
 
 int main() {
     ILogger* logger = LoggerImpl::createLogger("log.txt");
-    VectorImpl::setLogger(logger);
+    //VectorImpl::setLogger(logger);
 
     double data[] = {1, 2, 3};
 

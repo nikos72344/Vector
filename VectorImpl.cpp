@@ -13,11 +13,11 @@ RC VectorImpl::setLogger(ILogger *const logger) {
 
 RC VectorImpl::elemCheck(double elem) {
     if (std::isinf(elem)) {
-        LOGGER->severe(RC::INFINITY_OVERFLOW, "VectorImpl.cpp", "elemCheck", 12);
+        if (LOGGER != nullptr) LOGGER->severe(RC::INFINITY_OVERFLOW, __FILE__, __func__, __LINE__);
         return RC::INFINITY_OVERFLOW;
     }
     if (std::isnan(elem)) {
-        LOGGER->severe(RC::NOT_NUMBER, "VectorImpl.cpp", "elemCheck", 18);
+        if (LOGGER != nullptr) LOGGER->severe(RC::NOT_NUMBER, __FILE__, __func__, __LINE__);
         return RC::NOT_NUMBER;
     }
     return RC::SUCCESS;
@@ -25,14 +25,12 @@ RC VectorImpl::elemCheck(double elem) {
 
 VectorImpl::VectorImpl(size_t dim) {
     this->dim = dim;
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "VectorImpl", 29);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
 }
 
 IVector *VectorImpl::createVector(size_t dim, const double *const &ptr_data) {
-    if (LOGGER == nullptr)
-        return nullptr;
     if (dim == 0 || ptr_data == nullptr) {
-        LOGGER->severe(RC::NULLPTR_ERROR, "VectorImpl.cpp", "createVector", 37);
+        if (LOGGER != nullptr) LOGGER->severe(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return nullptr;
     }
 
@@ -43,33 +41,33 @@ IVector *VectorImpl::createVector(size_t dim, const double *const &ptr_data) {
     size_t size = sizeof(VectorImpl) + dim * sizeof(double);
     uint8_t *pInstance = new(std::nothrow) uint8_t[size];
     if (pInstance == nullptr) {
-        LOGGER->severe(RC::ALLOCATION_ERROR, "VectorImpl.cpp", "createVector", 49);
+        if (LOGGER != nullptr) LOGGER->severe(RC::ALLOCATION_ERROR, __FILE__, __func__, __LINE__);
         return nullptr;
     }
 
     uint8_t *pData = pInstance + sizeof(VectorImpl);
     memcpy(pData, (uint8_t *) ptr_data, dim * sizeof(double));
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "createVector", 44);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return new(pInstance) VectorImpl(dim);
 }
 
 RC VectorImpl::copyInstance(IVector *const dest, const IVector *const &src) {
     if (dest == nullptr || src == nullptr) {
-        LOGGER->warning(RC::NULLPTR_ERROR, "VectorImpl.cpp", "copyInstance", 62);
+        if (LOGGER != nullptr) LOGGER->warning(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return RC::NULLPTR_ERROR;
     }
     if (dest->sizeAllocated() < src->sizeAllocated()) {
-        LOGGER->warning(RC::AMOUNT, "VectorImpl.cpp", "copyInstance", 67);
+        if (LOGGER != nullptr) LOGGER->warning(RC::AMOUNT, __FILE__, __func__, __LINE__);
         return RC::AMOUNT;
     }
     if (abs((uint8_t *) src - (uint8_t *) dest) < dest->sizeAllocated()) {
-        LOGGER->warning(RC::MEMORY_INTERSECTION, "VectorImpl.cpp", "copyInstance", 72);
+        if (LOGGER != nullptr) LOGGER->warning(RC::MEMORY_INTERSECTION, __FILE__, __func__, __LINE__);
         return RC::MEMORY_INTERSECTION;
     }
 
     dest->setData(src->getDim(), src->getData());
 
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "copyInstance", 79);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
 }
 
@@ -79,168 +77,133 @@ RC VectorImpl::moveInstance(IVector *const dest, IVector *&src) {
         return res;
     delete src;
     src = nullptr;
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "moveInstance", 89);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
 }
 
 IVector *VectorImpl::clone() const {
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "clone", 94);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return createVector(dim, getData());
 }
 
 double const *VectorImpl::getData() const {
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "getData", 99);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return (double const *) ((uint8_t *) this + sizeof(VectorImpl));
 }
 
 RC VectorImpl::getCord(size_t index, double &val) const {
-    if (index >= dim || index < 0) {
-        LOGGER->warning(RC::INDEX_OUT_OF_BOUND, "VectorImpl.cpp", "getCord", 119);
+    if (index >= dim) {
+        if (LOGGER != nullptr) LOGGER->warning(RC::INDEX_OUT_OF_BOUND, __FILE__, __func__, __LINE__);
         return RC::INDEX_OUT_OF_BOUND;
     }
     const double *data = getData();
     val = data[index];
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "getCord", 111);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
 }
 
 RC VectorImpl::setCord(size_t index, double val) {
-    if (index >= dim || index < 0) {
-        LOGGER->warning(RC::INDEX_OUT_OF_BOUND, "VectorImpl.cpp", "setCord", 118);
+    if (index >= dim) {
+        if (LOGGER != nullptr) LOGGER->warning(RC::INDEX_OUT_OF_BOUND, __FILE__, __func__, __LINE__);
         return RC::INDEX_OUT_OF_BOUND;
     }
     RC temp = elemCheck(val);
     if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "setCord", 123);
+        if (LOGGER != nullptr) LOGGER->warning(temp, __FILE__, __func__, __LINE__);
         return temp;
     }
     double *data = (double *) ((uint8_t *) this + sizeof(VectorImpl));
     data[index] = val;
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "setCord", 128);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
-}
-
-size_t VectorImpl::getMaxAbs(const double *data, const size_t dim) {
-    size_t max = 0;
-    for (size_t i = 0; i < dim; i++)
-        if (max < fabs(data[i]))
-            max = i;
-    return max;
 }
 
 RC VectorImpl::scale(double multiplier) {
     RC temp = elemCheck(multiplier);
     if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "scale", 143);
+        if (LOGGER != nullptr) LOGGER->warning(temp, __FILE__, __func__, __LINE__);
         return temp;
     }
-    size_t max = getMaxAbs(getData(), dim);
-    double *data = (double *) ((uint8_t *) this + sizeof(VectorImpl));
-    temp = elemCheck(data[max] * multiplier);
+    double max = doChebyshev();
+    temp = elemCheck(max * multiplier);
     if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "scale", 150);
+        if (LOGGER != nullptr) LOGGER->warning(temp, __FILE__, __func__, __LINE__);
         return temp;
     }
+    double *data = (double *) ((uint8_t *) this + sizeof(VectorImpl));
     for (size_t i = 0; i < dim; i++)
         data[i] *= multiplier;
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "scale", 155);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
 }
 
 size_t VectorImpl::getDim() const {
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "getDim", 160);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return dim;
 }
 
-void VectorImpl::doSum(VectorImpl *dest, double const *op1, double const *op2, bool doMinus) {
+RC VectorImpl::doSum(double *dest, double const *src, size_t const dim, bool doMinus) {
     int s = doMinus ? -1 : 1;
-    double *data = (double *) ((uint8_t *) dest + sizeof(VectorImpl));
-    for (size_t i = 0; i < dest->dim; i++)
-        data[i] = op1[i] + s * op2[i];
+    double *data = new double[dim];
+    if(data == nullptr){
+        if(LOGGER != nullptr) LOGGER->warning(RC::ALLOCATION_ERROR, __FILE__, __func__, __LINE__);
+        return RC::ALLOCATION_ERROR;
+    }
+    for (size_t i = 0; i < dim; i++) {
+        data[i] = dest[i] + s * src[i];
+        RC code = elemCheck(data[i]);
+        if(code!=RC::SUCCESS){
+            if(LOGGER != nullptr) LOGGER->warning(code, __FILE__, __func__, __LINE__);
+            delete data;
+            return code;
+        }
+    }
+    memcpy(dest, data, dim * sizeof(double));
+    delete[] data;
+    if(LOGGER!= nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
+    return RC::SUCCESS;
 }
 
 RC VectorImpl::inc(const IVector *const &op) {
     if (op == nullptr) {
-        LOGGER->warning(RC::NULLPTR_ERROR, "VectorImpl.cpp", "inc", 174);
+        if (LOGGER != nullptr) LOGGER->warning(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return RC::NULLPTR_ERROR;
     }
     if (op->getDim() != dim) {
-        LOGGER->warning(RC::MISMATCHING_DIMENSIONS, "VectorImpl.cpp", "inc", 179);
+        if (LOGGER != nullptr) LOGGER->warning(RC::MISMATCHING_DIMENSIONS, __FILE__, __func__, __LINE__);
         return RC::MISMATCHING_DIMENSIONS;
     }
 
-    size_t max = getMaxAbs(getData(), dim);
-    RC temp = elemCheck(getData()[max] + op->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "inc", 186);
-        return temp;
-    }
+    RC code = doSum((double *)((uint8_t *) this + sizeof(VectorImpl)), op->getData(), dim);
 
-    max = getMaxAbs(op->getData(), op->getDim());
-    temp = elemCheck(getData()[max] + op->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "inc", 193);
-        return temp;
-    }
-
-    doSum(this, getData(), op->getData());
-
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "inc", 199);
-    return RC::SUCCESS;
+    if (code == RC::SUCCESS && LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
+    return code;
 }
 
 RC VectorImpl::dec(const IVector *const &op) {
     if (op == nullptr) {
-        LOGGER->warning(RC::NULLPTR_ERROR, "VectorImpl.cpp", "dec", 186);
+        if (LOGGER != nullptr) LOGGER->warning(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return RC::NULLPTR_ERROR;
     }
     if (op->getDim() != dim) {
-        LOGGER->warning(RC::MISMATCHING_DIMENSIONS, "VectorImpl.cpp", "dec", 191);
+        if (LOGGER != nullptr) LOGGER->warning(RC::MISMATCHING_DIMENSIONS, __FILE__, __func__, __LINE__);
         return RC::MISMATCHING_DIMENSIONS;
     }
 
-    size_t max = getMaxAbs(getData(), dim);
-    RC temp = elemCheck(getData()[max] - op->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "dec", 218);
-        return temp;
-    }
+    RC code = doSum((double *)((uint8_t *) this + sizeof(VectorImpl)), op->getData(), dim, true);
 
-    max = getMaxAbs(op->getData(), op->getDim());
-    temp = elemCheck(getData()[max] - op->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "dec", 225);
-        return temp;
-    }
-
-    doSum(this, getData(), op->getData(), true);
-
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "dec", 231);
-    return RC::SUCCESS;
+    if (code == RC::SUCCESS && LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
+    return code;
 }
 
 IVector *VectorImpl::add(const IVector *const &op1, const IVector *const &op2) {
     if (op1 == nullptr || op2 == nullptr) {
-        LOGGER->warning(RC::NULLPTR_ERROR, "VectorImpl.cpp", "add", 238);
+        if (LOGGER != nullptr) LOGGER->warning(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return nullptr;
     }
     size_t dim = op1->getDim();
     if (op2->getDim() != dim) {
-        LOGGER->warning(RC::MISMATCHING_DIMENSIONS, "VectorImpl.cpp", "add", 244);
-        return nullptr;
-    }
-
-    size_t max = getMaxAbs(op1->getData(), op1->getDim());
-    RC temp = elemCheck(op1->getData()[max] + op2->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "add", 251);
-        return nullptr;
-    }
-
-    max = getMaxAbs(op2->getData(), op2->getDim());
-    temp = elemCheck(op1->getData()[max] + op2->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "add", 258);
+        if (LOGGER != nullptr) LOGGER->warning(RC::MISMATCHING_DIMENSIONS, __FILE__, __func__, __LINE__);
         return nullptr;
     }
 
@@ -248,39 +211,25 @@ IVector *VectorImpl::add(const IVector *const &op1, const IVector *const &op2) {
     if (newVector == nullptr)
         return nullptr;
 
-    temp = newVector->inc(op2);
+    RC temp = newVector->inc(op2);
     if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "add", 268);
+        if (LOGGER != nullptr) LOGGER->warning(temp, __FILE__, __func__, __LINE__);
         delete newVector;
         return nullptr;
     }
 
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "add", 273);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return newVector;
 }
 
 IVector *VectorImpl::sub(const IVector *const &op1, const IVector *const &op2) {
     if (op1 == nullptr || op2 == nullptr) {
-        LOGGER->warning(RC::NULLPTR_ERROR, "VectorImpl.cpp", "sub", 280);
+        if (LOGGER != nullptr) LOGGER->warning(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return nullptr;
     }
     size_t dim = op1->getDim();
     if (op2->getDim() != dim) {
-        LOGGER->warning(RC::MISMATCHING_DIMENSIONS, "VectorImpl.cpp", "sub", 286);
-        return nullptr;
-    }
-
-    size_t max = getMaxAbs(op1->getData(), op1->getDim());
-    RC temp = elemCheck(op1->getData()[max] - op2->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "sub", 293);
-        return nullptr;
-    }
-
-    max = getMaxAbs(op2->getData(), op2->getDim());
-    temp = elemCheck(op1->getData()[max] - op2->getData()[max]);
-    if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "sub", 300);
+        if (LOGGER != nullptr) LOGGER->warning(RC::MISMATCHING_DIMENSIONS, __FILE__, __func__, __LINE__);
         return nullptr;
     }
 
@@ -288,25 +237,25 @@ IVector *VectorImpl::sub(const IVector *const &op1, const IVector *const &op2) {
     if (newVector == nullptr)
         return nullptr;
 
-    temp = newVector->dec(op2);
+    RC temp = newVector->dec(op2);
     if (temp != RC::SUCCESS) {
-        LOGGER->warning(temp, "VectorImpl.cpp", "sub", 310);
+        if (LOGGER != nullptr) LOGGER->warning(temp, __FILE__, __func__, __LINE__);
         delete newVector;
         return nullptr;
     }
 
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "sub", 315);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return newVector;
 }
 
 double VectorImpl::dot(const IVector *const &op1, const IVector *const &op2) {
     if (op1 == nullptr || op2 == nullptr) {
-        LOGGER->warning(RC::NULLPTR_ERROR, "VectorImpl.cpp", "dot", 322);
+        if (LOGGER != nullptr) LOGGER->warning(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return NAN;
     }
     size_t dim = op1->getDim();
     if (op2->getDim() != dim) {
-        LOGGER->warning(RC::MISMATCHING_DIMENSIONS, "VectorImpl.cpp", "dot", 328);
+        if (LOGGER != nullptr) LOGGER->warning(RC::MISMATCHING_DIMENSIONS, __FILE__, __func__, __LINE__);
         return NAN;
     }
 
@@ -315,7 +264,7 @@ double VectorImpl::dot(const IVector *const &op1, const IVector *const &op2) {
     for (size_t i = 0; i < dim; i++)
         res += one[i] * two[i];
 
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "dot", 337);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return res;
 }
 
@@ -360,7 +309,7 @@ double VectorImpl::norm(NORM n) const {
             res = NAN;
             break;
     }
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "norm", 373);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return res;
 }
 
@@ -370,7 +319,7 @@ bool VectorImpl::equals(const IVector *const &op1, const IVector *const &op2, NO
         return false;
     double res = temp->norm(n);
     delete temp;
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "equals", 383);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return res <= tol;
 }
 
@@ -378,7 +327,7 @@ RC VectorImpl::applyFunction(const std::function<double(double)> &fun) {
     double *data = (double *) ((uint8_t *) this + sizeof(VectorImpl));
     for (size_t i = 0; i < dim; i++)
         data[i] = fun(data[i]);
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "applyFunction", 391);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
 }
 
@@ -386,22 +335,22 @@ RC VectorImpl::foreach(const std::function<void(double)> &fun) const {
     double *data = (double *) ((uint8_t *) this + sizeof(VectorImpl));
     for (size_t i = 0; i < dim; i++)
         fun(data[i]);
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "foreach", 399);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
 }
 
 size_t VectorImpl::sizeAllocated() const {
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "sizeAllocated", 404);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return sizeof(VectorImpl) + dim * sizeof(double);
 }
 
 RC VectorImpl::setData(size_t dim, const double *const &ptr_data) {
-    if (dim == 0 || this->dim < dim) {
-        LOGGER->warning(RC::MISMATCHING_DIMENSIONS, "VectorImpl.cpp", "setData", 410);
+    if (dim == 0 || this->dim != dim) {
+        if (LOGGER != nullptr) LOGGER->warning(RC::MISMATCHING_DIMENSIONS, __FILE__, __func__, __LINE__);
         return RC::MISMATCHING_DIMENSIONS;
     }
     if (ptr_data == nullptr) {
-        LOGGER->warning(RC::NULLPTR_ERROR, "VectorImpl.cpp", "setData", 414);
+        if (LOGGER != nullptr) LOGGER->warning(RC::NULLPTR_ERROR, __FILE__, __func__, __LINE__);
         return RC::NULLPTR_ERROR;
     }
 
@@ -409,14 +358,13 @@ RC VectorImpl::setData(size_t dim, const double *const &ptr_data) {
     for (size_t i = 0; i < dim; i++) {
         temp = elemCheck(ptr_data[i]);
         if (temp != RC::SUCCESS) {
-            LOGGER->warning(temp, "VectorImpl.cpp", "setData", 422);
+            if (LOGGER != nullptr) LOGGER->warning(temp, __FILE__, __func__, __LINE__);
             return temp;
         }
     }
 
     double *data = (double *) ((uint8_t *) this + sizeof(VectorImpl));
     memcpy(data, ptr_data, dim * sizeof(double));
-    this->dim = dim;
-    LOGGER->info(RC::SUCCESS, "VectorImpl.cpp", "setData", 430);
+    if (LOGGER != nullptr) LOGGER->info(RC::SUCCESS, __FILE__, __func__, __LINE__);
     return RC::SUCCESS;
 }

@@ -14,9 +14,7 @@ private:
 
     static RC elemCheck(double elem);
 
-    static size_t getMaxAbs(const double *data, const size_t dim);
-
-    void doSum(VectorImpl *dest, double const *op1, double const *op2, bool doMinus = false);
+    RC doSum(double *dest, double const *src, size_t const dim, bool doMinus = false);
 
     double doChebyshev() const;
 
