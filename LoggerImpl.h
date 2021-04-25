@@ -11,32 +11,28 @@
 #include <map>
 
 class LoggerImpl : public ILogger {
-public:
-    static ILogger *createLogger();
-
-    static ILogger *createLogger(const char *const &filename, bool overwrite = true);
-
-    RC log(RC code, Level level, const char *const &srcfile, const char *const &function, int line);
-
-    RC log(RC code, Level level);
-
-    ~LoggerImpl();
-
 private:
-    FILE* stream;
-    std::map<RC, std::string> *RCtoString;
-    std::map<Level, std::string> *LevelToString;
+    FILE *stream;
+    static std::map<RC, std::string> RCtoString;
+    static std::map<ILogger::Level, std::string> LevelToString;
 
-    static std::map<RC, std::string> *createRCMap(void);
+    static RC fillRCMap(void);
 
-    static std::map<ILogger::Level, std::string> *createLevelMap(void);
+    static RC fillLevelMap(void);
 
 
     LoggerImpl(const LoggerImpl &);
 
     LoggerImpl &operator=(const LoggerImpl &);
 
-    LoggerImpl() = default;
+public:
+    LoggerImpl();
+
+    RC setStream(FILE *stream);
+
+    RC log(RC code, Level level, const char *const &srcfile, const char *const &function, int line);
+
+    RC log(RC code, Level level);
 
 };
 
