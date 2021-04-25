@@ -12,8 +12,6 @@ private:
     static ILogger *LOGGER;
     size_t dim;
 
-    static RC elemCheck(double elem);
-
     RC doSum(double *dest, double const *src, size_t const dim, bool doMinus = false);
 
     double doChebyshev() const;
@@ -28,14 +26,11 @@ private:
 
     VectorImpl &operator=(const VectorImpl &vector);
 
+public:
+
     VectorImpl(size_t dim);
 
-public:
-    static IVector *createVector(size_t dim, double const *const &ptr_data);
-
-    static RC copyInstance(IVector *const dest, IVector const *const &src);
-
-    static RC moveInstance(IVector *const dest, IVector *&src);
+    static RC elemCheck(double elem);
 
     IVector *clone() const;
 
@@ -44,6 +39,8 @@ public:
     RC setData(size_t dim, double const *const &ptr_data);
 
     static RC setLogger(ILogger *const logger);
+
+    static ILogger *const getLogger(void) { return LOGGER; };
 
     RC getCord(size_t index, double &val) const;
 
@@ -56,14 +53,6 @@ public:
     RC inc(IVector const *const &op);
 
     RC dec(IVector const *const &op);
-
-    static IVector *add(IVector const *const &op1, IVector const *const &op2);
-
-    static IVector *sub(IVector const *const &op1, IVector const *const &op2);
-
-    static double dot(IVector const *const &op1, IVector const *const &op2);
-
-    static bool equals(IVector const *const &op1, IVector const *const &op2, NORM n, double tol);
 
     double norm(NORM n) const;
 

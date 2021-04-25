@@ -1,4 +1,5 @@
 #pragma once
+
 #include "RC.h"
 
 /*
@@ -32,7 +33,7 @@ public:
     * True if you want to write over existing file (passed by default)
     * False if you want to append into existing file
     */
-    static ILogger *createLogger(const char* const& filename, bool overwrite = true);
+    static ILogger *createLogger(const char *const &filename, bool overwrite = true);
 
     /*
     * Logging is supposed to be implemented by receiving RC error code and writing corresponding string to output
@@ -52,7 +53,7 @@ public:
     * @param [in] line Number of line from where log() was called
     *
     */
-    virtual RC log(RC code, Level level, const char* const& srcfile, const char* const& function, int line) = 0;
+    virtual RC log(RC code, Level level, const char *const &srcfile, const char *const &function, int line) = 0;
 
     /*
     * Same as log() but without information about caller
@@ -62,7 +63,7 @@ public:
     /*
     * Same as log() but Level == SEVERE
     */
-    virtual RC severe(RC code, const char* const& srcfile, const char* const& function, int line) {
+    virtual RC severe(RC code, const char *const &srcfile, const char *const &function, int line) {
         return log(code, Level::SEVERE, srcfile, function, line);
     };
 
@@ -76,7 +77,7 @@ public:
     /*
     * Same as log() but Level == WARNING
     */
-    virtual RC warning(RC code, const char* const& srcfile, const char* const& function, int line) {
+    virtual RC warning(RC code, const char *const &srcfile, const char *const &function, int line) {
         return log(code, Level::WARNING, srcfile, function, line);
     };
 
@@ -90,7 +91,7 @@ public:
     /*
     * Same as log() but Level == INFO
     */
-    virtual RC info(RC code, const char* const& srcfile, const char* const& function, int line) {
+    virtual RC info(RC code, const char *const &srcfile, const char *const &function, int line) {
         return log(code, Level::INFO, srcfile, function, line);
     };
 
@@ -105,6 +106,7 @@ public:
 
 private:
     ILogger(const ILogger &);
+
     ILogger &operator=(const ILogger &);
 
 protected:
