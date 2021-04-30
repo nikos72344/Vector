@@ -1,0 +1,47 @@
+# depslib dependency file v1.0
+1514140574 source:d:\student\ludens\vector\main.cpp
+	"main.h"
+
+1514140574 d:\student\ludens\vector\main.h
+	<windows.h>
+
+1619340062 source:d:\student\ludens\vector\ilogger.cpp
+	"LoggerImpl.h"
+
+1619340062 d:\student\ludens\vector\loggerimpl.h
+	"ILogger.h"
+	<stdio.h>
+	<string>
+	<map>
+
+1619538345 d:\student\ludens\vector\ilogger.h
+	"RC.h"
+	"Interfacedllexport.h"
+
+1619346922 d:\student\ludens\vector\rc.h
+
+1619340060 source:d:\student\ludens\vector\ivector.cpp
+	"VectorImpl.h"
+	<memory.h>
+	<cmath>
+
+1619335542 d:\student\ludens\vector\vectorimpl.h
+	"IVector.h"
+
+1619538345 d:\student\ludens\vector\ivector.h
+	<cstddef>
+	<functional>
+	"RC.h"
+	"ILogger.h"
+	"Interfacedllexport.h"
+
+1619340062 source:d:\student\ludens\vector\loggerimpl.cpp
+	"LoggerImpl.h"
+
+1619335792 source:d:\student\ludens\vector\vectorimpl.cpp
+	"VectorImpl.h"
+	<cmath>
+	<memory.h>
+
+1619004936 d:\student\ludens\vector\interfacedllexport.h
+
